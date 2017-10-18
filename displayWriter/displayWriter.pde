@@ -31,18 +31,20 @@ hide black leds button
 */
 ArrayList<boolean[][]> frames = new ArrayList<boolean[][]>();
 int currentFrame = 0;
-int res = 24;
-
+int resx = 8;
+int resy = 5;
+int radius;
 void setup(){
-  size(800,800);
-  frames.add(new boolean[res][res]);
+  radius = min(40, max(15, -1 * max(resx,resy) + 35));
+  surface.setSize(radius*resx*2, radius*resy*2);
+  frames.add(new boolean[resx][resy]);
   textSize(20);
   
 
   
 }
 
-disp d = new disp(res,res);
+disp d = new disp(resx,resy);
 
 void draw(){
   background(100);
@@ -71,7 +73,7 @@ void keyPressed(){
     if(currentFrame < 100 && !d.isEmpty()){
       frames.set(currentFrame,  d.getData());
       currentFrame++;
-      if(frames.size() <=currentFrame) frames.add(new boolean[res][res]);
+      if(frames.size() <=currentFrame) frames.add(new boolean[resx][resy]);
       d.loadData(frames.get(currentFrame));
     }
   }
@@ -82,6 +84,7 @@ void keyPressed(){
     d.paste();
   }
   if(key == 'l') d.showBlack = !d.showBlack;
+  if(key == 's')d.saveBool("test");
   
 }
 
@@ -92,7 +95,7 @@ class disp{
   boolean[][] data2;
   boolean[][] clip;
   int mode = 0;
-  int radius = 20;
+  
   disp(int xwidth, int ywidth){
     data = new boolean[xwidth][ywidth];
     data2 = new boolean[xwidth][ywidth];
@@ -193,4 +196,44 @@ class disp{
       data[i][0] = temp;
     }
   }
+  void saveBool(String fileName){
+    //make new array to save and transfer data over
+    
+    //CURRENT ISSUE IS LEAST SIGNIFICANT BIT IS NOT REGISTERING SOMETIMES
+    
+    
+  boolean[] b = new boolean[data.length*data[0].length];
+  for(int y = 0; y < data[0].length; y++)
+    for(int x = 0; x < data.length; x++)
+    
+      b[y*(data.length - 1)+ x] = data[x][y];  
+  
+  byte[] toSave = new byte[b.length / 8 + 3];
+  toSave[0] = (byte)data.length;
+  toSave[1] = (byte)data[0].length;
+  int counter = 0;
+  int placeInByteArray = 2;
+  byte tempByte = 0;
+  
+  //run until (b.length / 8) * 8 + 1 
+  
+  for(int i = 0; i < b.length; i++){
+    if(counter >= 8){
+      toSave[placeInByteArray] = tempByte;
+      tempByte = 0;
+      placeInByteArray++;
+      counter = 0;
+    }
+    tempByte <<= 1;
+    if(b[i]){
+       print("yee"); 
+      tempByte += 1;
+    }
+    counter++;
+  }
+  tempByte <<= (8-counter);
+  toSave[placeInByteArray] = tempByte;
+  saveBytes(fileName, toSave);
+}
+
 }
