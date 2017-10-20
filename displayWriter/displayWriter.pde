@@ -31,8 +31,8 @@ hide black leds button
 */
 ArrayList<boolean[][]> frames = new ArrayList<boolean[][]>();
 int currentFrame = 0;
-int resx = 8;
-int resy = 5;
+int resx = 40;
+int resy = 24;
 int radius;
 void setup(){
   radius = min(40, max(15, -1 * max(resx,resy) + 35));
@@ -199,16 +199,16 @@ class disp{
   void saveBool(String fileName){
     //make new array to save and transfer data over
     
-    //CURRENT ISSUE IS LEAST SIGNIFICANT BIT IS NOT REGISTERING SOMETIMES
     
     
   boolean[] b = new boolean[data.length*data[0].length];
   for(int y = 0; y < data[0].length; y++)
-    for(int x = 0; x < data.length; x++)
-    
-      b[y*(data.length - 1)+ x] = data[x][y];  
-  
-  byte[] toSave = new byte[b.length / 8 + 3];
+    for(int x = 0; x < data.length; x++){    
+      b[y*(data.length)+ x] = data[x][y];  
+      //print(y*(data.length)+ x);
+      //if(data[x][y])print("yes");
+    }
+  byte[] toSave = new byte[b.length / 8 + 3]; //one for x width, one for y width, one for overflow
   toSave[0] = (byte)data.length;
   toSave[1] = (byte)data[0].length;
   int counter = 0;
@@ -218,7 +218,7 @@ class disp{
   //run until (b.length / 8) * 8 + 1 
   
   for(int i = 0; i < b.length; i++){
-    if(counter >= 8){
+    if(counter > 7){
       toSave[placeInByteArray] = tempByte;
       tempByte = 0;
       placeInByteArray++;
@@ -229,9 +229,10 @@ class disp{
        print("yee"); 
       tempByte += 1;
     }
+    
     counter++;
   }
-  tempByte <<= (8-counter);
+  tempByte <<= (8 - counter);
   toSave[placeInByteArray] = tempByte;
   saveBytes(fileName, toSave);
 }
